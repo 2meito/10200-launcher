@@ -1,6 +1,5 @@
 use crate::api::headers::default_headers;
 use crate::api::response::handle_response;
-use crate::api::{NexonLoginResponse, NexonPassportRequest, NexonPassportResponse};
 use log::debug;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};

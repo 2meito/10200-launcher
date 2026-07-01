@@ -3,7 +3,6 @@ use crate::api::response::handle_response;
 use anyhow::Result;
 use log::debug;
 use reqwest::Client;
-use reqwest::header::{ACCEPT, CONTENT_TYPE, HeaderMap, HeaderValue, USER_AGENT};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Debug)]

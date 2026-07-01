@@ -1,0 +1,108 @@
+import {
+    Button,
+    VerticalBox,
+    LineEdit,
+    HorizontalBox,
+    Spinner,
+    Switch,
+} from "std-widgets.slint";
+
+import "fonts/Raleway-Bold.ttf";
+import { Logo } from "compontents/logo.slint";
+
+export enum LoginState {
+    LoggedOut,
+    LoggingIn
+}
+
+export component AppWindow inherits Window {
+    title: @tr("Launcher");
+
+    width: 400px;
+    height: 375px;
+    in property <LoginState> login-state;
+    callback login-requested(string, string);
+    function do-login() {
+        login-requested(account-input.text, password-input.text);
+    }
+    VerticalLayout {
+        VerticalLayout {
+            alignment: space-around;
+            padding-left: 20px;
+            padding-right: 20px;
+            VerticalLayout {
+                alignment: center;
+                Logo {
+                    single-row-size: 64px;
+                }
+
+                height: 100px;
+            }
+
+            VerticalLayout {
+                alignment: center;
+                spacing: 24px;
+                VerticalLayout {
+                    alignment: center;
+                    HorizontalBox {
+                        alignment: stretch;
+                        account-input := LineEdit {
+                            height: 42px;
+                            horizontal-alignment: left;
+                            font-size: 15px;
+                            placeholder-text: @tr("Email Address or Nexon ID");
+                            accepted => {
+                                do-login();
+                            }
+                        }
+
+                        vertical-stretch: 0;
+                    }
+
+                    HorizontalBox {
+                        alignment: stretch;
+                        password-input := LineEdit {
+                            height: 42px;
+                            horizontal-alignment: left;
+                            input-type: InputType.password;
+                            font-size: 15px;
+                            placeholder-text: @tr("Password");
+                            accepted => {
+                                do-login();
+                            }
+                        }
+
+                        vertical-stretch: 0;
+                    }
+                }
+
+                HorizontalBox {
+                    alignment: end;
+                    padding-left: 12px;
+                    Button {
+                        primary: true;
+                        enabled: login-state == LoginState.LoggedOut && (!account-input.text.is-empty && !password-input.text.is-empty);
+                        text: "Log In";
+                        width: 110px;
+                        height: 38px;
+                        clicked => {
+                            do-login();
+                        }
+                    }
+
+                    if login-state == LoginState.LoggingIn: HorizontalLayout {
+                        alignment: center;
+                        Spinner {
+                            indeterminate: true;
+                        }
+
+                        height: 38px;
+                    }
+                    vertical-stretch: 0;
+                }
+            }
+
+            VerticalLayout { }
+        }
+    }
+}

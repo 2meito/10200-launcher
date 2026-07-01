@@ -1,0 +1,28 @@
+import { HorizontalBox, Palette } from "std-widgets.slint";
+
+export component Logo inherits HorizontalBox {
+    in property <length> single-row-size: 64px;
+
+    VerticalLayout {
+        alignment: start;
+
+        HorizontalLayout {
+            alignment: start;
+            spacing: single-row-size * 20%;
+
+            Image {
+                source: @image-url("../images/logo.svg");
+                width: single-row-size * 80%;
+                height: single-row-size * 80%;
+            }
+
+            Text {
+                font-family: "Raleway";
+                font-size: single-row-size * 90%;
+                height: single-row-size;
+                text: "LOGIN";
+                vertical-alignment: center;
+            }
+        }
+    }
+}
