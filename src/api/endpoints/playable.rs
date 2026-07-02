@@ -13,7 +13,7 @@ pub struct NexonPlayableRequest<'a> {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct NexonPlayableResponse {
     #[serde(rename = "countryCode")]
-    country_code: String,
+    pub country_code: String,
 }
 
 pub async fn check_playable(

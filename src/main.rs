@@ -1,11 +1,14 @@
+use crate::launcher::Launcher;
 use async_compat::Compat;
 use log::LevelFilter;
 use reqwest::Client;
-use std::error::Error;
+use std::env;
+use std::path::PathBuf;
 
 slint::include_modules!();
 
 mod api;
+mod launcher;
 mod util;
 
 #[tokio::main]
@@ -15,39 +18,33 @@ async fn main() -> Result<(), slint::PlatformError> {
         .init();
 
     let client: Client = Client::builder().cookie_store(true).build().unwrap();
+    let path = PathBuf::from(env::var("STEAM_COMPAT_INSTALL_PATH").unwrap())
+        .join("Client.exe")
+        .into_os_string()
+        .into_string()
+        .unwrap();
+    let launcher: Launcher = Launcher::new(client.clone(), path);
+
     let ui = AppWindow::new()?;
     let ui_handle = ui.as_weak();
     ui.on_login_requested(move |email_or_nexon_id, password| {
         let ui = ui_handle.unwrap();
-        let client = client.clone();
+        let launcher = launcher.clone();
         ui.set_login_state(LoginState::LoggingIn);
         slint::spawn_local(Compat::new(async move {
-            let result = login(&client, &email_or_nexon_id, &password).await;
-            ui.set_login_state(LoginState::LoggedOut);
-            result
+            let child_process = launcher
+                .launch(&email_or_nexon_id.clone(), &password.clone())
+                .await;
+            match child_process {
+                Ok(mut value) => {
+                    ui.hide().unwrap();
+                    value.wait().await.unwrap();
+                    slint::quit_event_loop().unwrap()
+                },
+                Err(_) => {}
+            }
         }))
         .unwrap();
     });
     ui.run()
-}
-
-async fn login(
-    client: &Client,
-    email_or_nexon_id: &str,
-    password: &str,
-) -> Result<(), Box<dyn Error>> {
-    api::get_access_token(
-        &client,
-        false,
-        &email_or_nexon_id,
-        &password,
-        &util::get_device_id(),
-        &util::generate_captcha_token(),
-    )
-    .await?;
-    let product_id = "10200"; // Mabinogi
-    api::check_playable(&client, &product_id).await?;
-    api::get_passport(&client, &product_id).await?;
-
-    Ok(())
 }

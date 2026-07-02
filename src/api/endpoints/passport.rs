@@ -3,11 +3,10 @@ use crate::api::response::handle_response;
 use anyhow::Result;
 use log::debug;
 use reqwest::Client;
-use reqwest::header::{ACCEPT, CONTENT_TYPE, HeaderMap, HeaderValue, USER_AGENT};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Debug)]
-pub struct NexonPassportRequest <'a> {
+pub struct NexonPassportRequest<'a> {
     #[serde(rename = "productId")]
     product_id: &'a str,
 }
@@ -15,9 +14,9 @@ pub struct NexonPassportRequest <'a> {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct NexonPassportResponse {
     #[serde(rename = "need_update_session")]
-    need_update_session: bool,
+    pub need_update_session: bool,
     #[serde(rename = "passport")]
-    passport: String,
+    pub passport: String,
 }
 
 pub async fn get_passport(client: &Client, product_id: &str) -> Result<NexonPassportResponse> {

@@ -27,17 +27,17 @@ pub struct NexonLoginRequest<'a> {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct NexonLoginResponse {
     #[serde(rename = "countryCode")]
-    country_code: String,
+    pub country_code: String,
     #[serde(rename = "globalUserNo")]
-    global_user_no: i64,
+    pub global_user_no: i64,
     #[serde(rename = "hashedGlobalUserNo")]
-    hashed_global_user_no: Option<String>,
+    pub hashed_global_user_no: Option<String>,
     #[serde(rename = "isVerified")]
-    is_verified: bool,
+    pub is_verified: bool,
     #[serde(rename = "loginSessionExpiresIn")]
-    login_session_expires_in: i64,
+    pub login_session_expires_in: i64,
     #[serde(rename = "userNo")]
-    user_no: i64,
+    pub user_no: i64,
 }
 
 pub async fn get_access_token(
