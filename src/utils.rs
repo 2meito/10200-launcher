@@ -1,4 +1,10 @@
 use nanoid::nanoid;
+use sha2::{Digest, Sha256};
+
+pub fn get_device_id() -> Result<String, Box<dyn std::error::Error>> {
+    let sha256 = Sha256::digest(machine_uid::get()?);
+    Ok(hex::encode(sha256))
+}
 
 pub fn generate_session_id() -> String {
     const ALPHANUMERIC: &[char] = &[
@@ -9,3 +15,4 @@ pub fn generate_session_id() -> String {
     ];
     nanoid!(32, ALPHANUMERIC)
 }
+

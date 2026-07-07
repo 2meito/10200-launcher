@@ -1,29 +1,23 @@
-use crate::launcher::Launcher;
 use async_compat::Compat;
-use log::LevelFilter;
-use reqwest::Client;
-use std::env;
 use std::path::PathBuf;
+use crate::auth::Launcher;
+use crate::product::Product;
 
 slint::include_modules!();
 
 mod api;
-mod launcher;
-mod util;
+mod product;
+mod auth;
+mod utils;
 
 #[tokio::main]
 async fn main() -> Result<(), slint::PlatformError> {
-    env_logger::builder()
-        .filter_level(LevelFilter::Debug)
-        .init();
-
-    let client: Client = Client::builder().cookie_store(true).build().unwrap();
-    let path = PathBuf::from(env::var("STEAM_COMPAT_INSTALL_PATH").unwrap())
+    env_logger::init();
+    let game_path = PathBuf::from(std::env::var("STEAM_COMPAT_INSTALL_PATH").unwrap())
         .join("Client.exe")
         .into_os_string()
-        .into_string()
-        .unwrap();
-    let launcher: Launcher = Launcher::new(client.clone(), path);
+        .into_string().unwrap();
+    let launcher = Launcher::new(Product::Mabinogi, game_path).unwrap();
 
     let ui = AppWindow::new()?;
     let ui_handle = ui.as_weak();
@@ -44,7 +38,8 @@ async fn main() -> Result<(), slint::PlatformError> {
                 Err(_) => {}
             }
         }))
-        .unwrap();
+            .unwrap();
     });
+
     ui.run()
 }

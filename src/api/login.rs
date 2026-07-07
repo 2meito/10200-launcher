@@ -1,18 +1,15 @@
-use crate::api::headers::default_headers;
-use crate::api::response::handle_response;
-use anyhow::Result;
-use log::debug;
+use std::error::Error;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Debug)]
-pub struct NexonLoginRequest<'a> {
+pub struct LoginRequest<'a> {
     #[serde(rename = "autoLogin")]
     auto_login: bool,
     #[serde(rename = "captchaToken")]
     captcha_token: &'a str,
     #[serde(rename = "captchaVersion")]
-    captcha_version: &'static str,
+    captcha_version: &'a str,
     #[serde(rename = "deviceId")]
     device_id: &'a str,
     #[serde(rename = "id")]
@@ -24,8 +21,14 @@ pub struct NexonLoginRequest<'a> {
     time_offset: i32,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct NexonLoginResponse {
+#[derive(Serialize, Debug)]
+pub struct AutoLoginRequest<'a> {
+    #[serde(rename = "deviceId")]
+    device_id: &'a str,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct LoginResponse {
     #[serde(rename = "countryCode")]
     pub country_code: String,
     #[serde(rename = "globalUserNo")]
@@ -40,17 +43,17 @@ pub struct NexonLoginResponse {
     pub user_no: i64,
 }
 
-pub async fn get_access_token(
+
+pub async fn login(
     client: &Client,
     auto_login: bool,
     email_or_nexon_id: &str,
     password: &str,
     device_id: &str,
     captcha_token: &str,
-) -> Result<NexonLoginResponse> {
+) -> Result<LoginResponse, Box<dyn Error>> {
     let endpoint = "https://www.nexon.com/api/regional-auth/v1.0/no-auth/launcher/email/login";
-    let headers = default_headers();
-    let body = NexonLoginRequest {
+    let body = LoginRequest {
         auto_login,
         captcha_token,
         captcha_version: "v3",
@@ -60,9 +63,6 @@ pub async fn get_access_token(
         local_time: chrono::Utc::now().timestamp_millis(),
         time_offset: chrono::Local::now().offset().utc_minus_local() / 60,
     };
-    let request = client.post(endpoint).headers(headers).json(&body).build()?;
-    debug!("\n{:#?}\n{:#?}", request, body);
-
-    let response = client.execute(request).await?;
-    handle_response(response).await
+    let response = client.post(endpoint).json(&body).send().await?;
+    Ok(response.json().await?)
 }
